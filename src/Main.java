@@ -16,6 +16,12 @@ public class Main {
 
         for (String expressaoInfixa : expressoesDeTeste) {
             List<String> tokensRpn = converterInfixaParaRpn(expressaoInfixa);
+            double resultado = avaliarExpressaoRpn(tokensRpn);
+
+            System.out.println("Expressão original : " + expressaoInfixa);
+            System.out.println("Expressão em RPN   : " + String.join(" ", tokensRpn));
+            System.out.println("Resultado          : " + resultado);
+            System.out.println("-----------------------------------------------");
         }
     }
 
@@ -58,13 +64,14 @@ public class Main {
         return tokensEncontrados;
     }
 
+
     private static boolean tokenEhOperador(String token) {
         return token.equals("+")
             || token.equals("-")
             || token.equals("*")
             || token.equals("/");
     }
-
+    
     private static int obterPrecedenciaDoOperador(String operador) {
         if (operador.equals("*") || operador.equals("/")) {
             return 2;
@@ -111,5 +118,41 @@ public class Main {
         }
 
         return tokensEmNotacaoRpn;
+    }
+    
+    private static double aplicarOperador(String operador, double operandoEsquerdo, double operandoDireito) {
+        switch (operador) {
+            case "+":
+                return operandoEsquerdo + operandoDireito;
+            case "-":
+                return operandoEsquerdo - operandoDireito;
+            case "*":
+                return operandoEsquerdo * operandoDireito;
+            case "/":
+                return operandoEsquerdo / operandoDireito;
+            default:
+                throw new IllegalArgumentException("Operador desconhecido: " + operador);
+        }
+    }
+
+    /**
+     * {
+     *     "tokensEmNotacaoRpn": ["3", "4", "2", "*", "+"]
+     * }
+     */
+    private static double avaliarExpressaoRpn(List<String> tokensEmNotacaoRpn) {
+        Deque<Double> pilhaDeOperandos = new ArrayDeque<>();
+
+        for (String token : tokensEmNotacaoRpn) {
+            if (tokenEhOperador(token)) {
+                double operandoDireito = pilhaDeOperandos.pop();
+                double operandoEsquerdo = pilhaDeOperandos.pop();
+                pilhaDeOperandos.push(aplicarOperador(token, operandoEsquerdo, operandoDireito));
+            } else {
+                pilhaDeOperandos.push(Double.parseDouble(token));
+            }
+        }
+
+        return pilhaDeOperandos.pop();
     }
 }
